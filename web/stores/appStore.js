@@ -11,23 +11,18 @@ const Store = types
     servers: types.array(ServerModel),
     bosses: types.array(RaidBossModel),
     serverKills: types.array(ServerBossKillModel),
-
-    isInitialized: false,
   })
   .actions((self) => {
-    const afterCreate = flow(function* () {
+    const loadServers = flow(function* () {
       const servers = yield getAllServers();
       self.servers = servers;
-      self.isInitialized = true;
     });
     return {
-      afterCreate,
+      loadServers,
     };
   });
 
 export function initializeStore(snapshot = null) {
-  console.log('execuiting initialize', snapshot, store);
-
   const _store = store ?? Store.create();
 
   // If your page has Next.js data fetching methods that use a Mobx store, it will
@@ -39,8 +34,6 @@ export function initializeStore(snapshot = null) {
   if (typeof window === 'undefined') return _store;
   // Create the store once in the client
   if (!store) store = _store;
-
-  console.log('current store', store);
 
   return store;
 }

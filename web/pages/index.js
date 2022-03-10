@@ -1,40 +1,27 @@
-import Head from 'next/head';
+import { useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { getSnapshot } from 'mobx-state-tree';
 import { initializeStore, useStore } from '@stores/appStore';
+import { useRouter } from 'next/router';
 
-import Layout from '@components/layout';
-
-export function getStaticProps() {
-  console.log('executing get static props');
+export async function getStaticProps() {
   const store = initializeStore();
+  await store.loadServers();
 
-  console.log('aaaa');
   return { props: { initialState: getSnapshot(store) } };
 }
 
 const Home = (props) => {
+  const router = useRouter();
   const { servers } = useStore();
-  console.log('in home page', servers, props);
-  return (
-    <Layout>
-      <>
-        <Head>
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
 
-        <main>
-          <div>
-            <pre>{JSON.stringify(getSnapshot(servers))}</pre>
-          </div>
-        </main>
+  useEffect(() => {
+    if (servers.length > 0) {
+      router.push(`/servers/${servers[0].id}`, undefined, { shallow: true });
+    }
+  }, [servers]);
 
-        <footer>
-          <div>Footer</div>
-        </footer>
-      </>
-    </Layout>
-  );
+  return <div>Loading...</div>;
 };
 
 export default observer(Home);
