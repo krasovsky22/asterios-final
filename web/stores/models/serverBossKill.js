@@ -17,6 +17,7 @@ const ServerBossKillModel = types
 
     isSpawning: types.optional(types.boolean, false),
     isSpawned: types.optional(types.boolean, false),
+    isChestVisible: types.optional(types.boolean, false),
   })
   .views((self) => ({
     get killedAt() {
@@ -40,6 +41,13 @@ const ServerBossKillModel = types
 
       return respawnEndTime.toLocaleString();
     },
+
+    get checkIsVisibleUntil() {
+      const checkEndTime = new Date(self.isoDate);
+      checkEndTime.setTime(checkEndTime.getTime() + 3 * 60 * 1000);
+
+      return checkEndTime;
+    },
   }))
   .actions((self) => ({
     setIsSpawning: (isSpawning) => {
@@ -47,6 +55,9 @@ const ServerBossKillModel = types
     },
     setIsSpawned: (isSpawned) => {
       self.isSpawned = isSpawned;
+    },
+    setIsChestVisible: (isChestVisible) => {
+      self.isChestVisible = isChestVisible;
     },
   }))
   .actions((self) => {
@@ -68,8 +79,12 @@ const ServerBossKillModel = types
         const respawnEndTime = new Date(isoDate);
         respawnEndTime.setTime(killedAt.getTime() + 30 * 60 * 60 * 1000);
 
-        self.setIsSpawning(now > respawnStartTime && now < respawnEndTime);
+        const checkEndTime = new Date(isoDate);
+        checkEndTime.setTime(killedAt.getTime() + 3 * 60 * 1000);
+
         self.setIsSpawned(now > respawnEndTime);
+        self.setIsChestVisible(now < checkEndTime);
+        self.setIsSpawning(now > respawnStartTime && now < respawnEndTime);
       }, 1000);
     };
 

@@ -1,6 +1,6 @@
-const functions  = require("firebase-functions");
-const admin  = require ("firebase-admin");
-const Parser = require ( "rss-parser");
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const Parser = require( "rss-parser");
 
 const initialBosses = require( "./initial-data/bosses");
 const initialServers = require( "./initial-data/servers");
@@ -19,20 +19,20 @@ const loadServersFromFirestore = async () => {
     snapshot.docs.reduce((carry, doc) => {
       Object.assign(carry, {[doc.id]: doc.data()});
       return carry;
-    }, {})
+    }, {}),
   );
 
   // if nothing in database, insert initial data
   if (Object.values(serversRecords).length === 0) {
     await Promise.all(
-        initialServers.map((server) => serversCollection.doc().set(server))
+        initialServers.map((server) => serversCollection.doc().set(server)),
     );
 
     return await serversCollection.get().then((snapshot) =>
       snapshot.docs.reduce((carry, doc) => {
         Object.assign(carry, {[doc.id]: doc.data()});
         return carry;
-      }, {})
+      }, {}),
     );
   }
 
@@ -44,13 +44,13 @@ const loadBossesFromFirestore = async () => {
     snapshot.docs.reduce((carry, doc) => {
       Object.assign(carry, {[doc.id]: doc.data()});
       return carry;
-    }, {})
+    }, {}),
   );
 
   // if nothing in database, insert initial data
   if (Object.values(bossesRecords).length === 0) {
     await Promise.all(
-        initialBosses.map((boss) => bossesCollection.doc().set(boss))
+        initialBosses.map((boss) => bossesCollection.doc().set(boss)),
     );
 
     return await bossesCollection.get().then((snapshot) =>
@@ -58,7 +58,7 @@ const loadBossesFromFirestore = async () => {
         const bossData = doc.data();
         Object.assign(carry, {[doc.id]: bossData});
         return carry;
-      }, {})
+      }, {}),
     );
   }
 
@@ -92,13 +92,13 @@ exports.parseMainFeed = functions.https.onRequest(async (req, res) => {
             snapshot.docs.reduce((carry, doc) => {
               Object.assign(carry, {[doc.id]: doc.data()});
               return carry;
-            }, {})
+            }, {}),
           );
 
     Object.keys(bosses).forEach(async (bossKey) => {
       const boss = bosses[bossKey];
       const bossData = items.find((item) =>
-        item.title?.includes(boss.name)
+        item.title?.includes(boss.name),
       );
 
       if (!bossData) {

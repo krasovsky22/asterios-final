@@ -48,7 +48,7 @@ const Server = () => {
       </Head>
 
       <Layout>
-        <SimpleGrid columns={2} spacing={2} height="100%">
+        <SimpleGrid columns={2} spacing={10} height="100%">
           {bosses.map((boss) => (
             <Raidboss key={boss.id} boss={boss} />
           ))}

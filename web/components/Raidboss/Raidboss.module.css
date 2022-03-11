@@ -1,0 +1,11 @@
+@keyframes blinkingText {
+  0% {
+    background-color: var(--chakra-colors-green-300);
+  }
+  100% {
+    background-color: var(--chakra-colors-red-100);
+  }
+}
+.blinking {
+  animation: blinkingText 0.5s infinite;
+}
