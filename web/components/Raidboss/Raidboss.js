@@ -1,4 +1,3 @@
-import Head from 'next/head';
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useToast } from '@chakra-ui/react';
@@ -24,8 +23,12 @@ const BossInfoMap = {
   },
 };
 
+const DEFAULT_TITLE = 'Asterios Raidboss Notifier';
+const TITLE_MESSAGES = ['ATTENTION!', 'BOSS IS SPAWNED!'];
+
 const Raidboss = ({ boss }) => {
-  const [seconds, setSecods] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [titleIndex, setTitleIndex] = useState(0);
   const { getBossKill } = useStore();
   const toast = useToast();
 
@@ -43,13 +46,22 @@ const Raidboss = ({ boss }) => {
     let interval = setInterval(() => {
       if (kill?.isChestVisible) {
         const now = new Date();
-        const seconds = Math.abs(
+        const seconds = Math.floor(
           (kill?.checkIsVisibleUntil.getTime() - now.getTime()) / 1000
         );
 
-        setSecods(seconds);
+        setSeconds(seconds);
+
+        setTitleIndex((prevIndex) => {
+          const newIndex =
+            prevIndex === TITLE_MESSAGES.length - 1 ? 0 : prevIndex + 1;
+          document.title = TITLE_MESSAGES[newIndex];
+
+          return newIndex;
+        });
       } else {
         clearInterval(interval);
+        document.title = DEFAULT_TITLE;
       }
     }, 1000);
 
@@ -90,12 +102,6 @@ const Raidboss = ({ boss }) => {
       className={classNames({ [styles.blinking]: kill?.isChestVisible })}
       onClick={copyChestCommand}
     >
-      {kill?.isChestVisible && (
-        <Head>
-          <title>Boss Spawned!</title>
-        </Head>
-      )}
-
       <Box
         width="30%"
         height="100%"
@@ -117,8 +123,8 @@ const Raidboss = ({ boss }) => {
             </Flex>
             <Text flexGrow={1}>{kill.content}</Text>
             {kill.isChestVisible && (
-              <Flex>
-                <Text>Chest is visible for next:</Text>
+              <Flex gap={1}>
+                <Text>Chest is visible for next</Text>
                 <Text>{seconds} seconds.</Text>
               </Flex>
             )}

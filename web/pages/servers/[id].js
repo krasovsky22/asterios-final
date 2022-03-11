@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { observer } from 'mobx-react-lite';
 import { SimpleGrid } from '@chakra-ui/react';
@@ -42,19 +41,13 @@ const Server = () => {
   }, [serverId, subscribeToServerKills]);
 
   return (
-    <>
-      <Head>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <Layout>
-        <SimpleGrid columns={2} spacing={10} height="100%">
-          {bosses.map((boss) => (
-            <Raidboss key={boss.id} boss={boss} />
-          ))}
-        </SimpleGrid>
-      </Layout>
-    </>
+    <Layout>
+      <SimpleGrid columns={2} spacing={10} height="100%">
+        {bosses.map((boss) => (
+          <Raidboss key={boss.id} boss={boss} />
+        ))}
+      </SimpleGrid>
+    </Layout>
   );
 };
 
