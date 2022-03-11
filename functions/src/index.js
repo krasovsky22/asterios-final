@@ -50,7 +50,7 @@ const loadBossesFromFirestore = async () => {
   // if nothing in database, insert initial data
   if (Object.values(bossesRecords).length === 0) {
     await Promise.all(
-        initialBosses.map((server) => bossesCollection.doc().set(server))
+        initialBosses.map((boss) => bossesCollection.doc().set(boss))
     );
 
     return await bossesCollection.get().then((snapshot) =>

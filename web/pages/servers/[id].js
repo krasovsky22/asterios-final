@@ -1,13 +1,17 @@
+import { useEffect } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { observer } from 'mobx-react-lite';
+import { SimpleGrid } from '@chakra-ui/react';
 import { getSnapshot } from 'mobx-state-tree';
-import { initializeStore, useStore } from '@stores/appStore';
 
 import Layout from '@components/layout';
+import { Raidboss } from '@components/Raidboss';
+import { initializeStore, useStore } from '@stores/appStore';
 
 export async function getStaticProps() {
   const store = initializeStore();
-  await store.loadServers();
+  await store.initializeDefaults();
 
   return { props: { initialState: getSnapshot(store) } };
 }
@@ -25,24 +29,32 @@ export async function getStaticPaths() {
   };
 }
 
-const Server = (props) => {
-  const { servers } = useStore();
+const Server = () => {
+  const { query } = useRouter();
+  const { id: serverId } = query;
+
+  const { subscribeToServerKills, bosses } = useStore();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToServerKills(serverId);
+
+    return () => unsubscribe();
+  }, [serverId, subscribeToServerKills]);
+
   return (
-    <Layout>
-      <>
-        <Head>
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
+    <>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
 
-        <main>
-          <div>Test</div>
-        </main>
-
-        <footer>
-          <div>Footer</div>
-        </footer>
-      </>
-    </Layout>
+      <Layout>
+        <SimpleGrid columns={2} spacing={2} height="100%">
+          {bosses.map((boss) => (
+            <Raidboss key={boss.id} boss={boss} />
+          ))}
+        </SimpleGrid>
+      </Layout>
+    </>
   );
 };
 
