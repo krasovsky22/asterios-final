@@ -8,13 +8,7 @@ export default function Layout({ children }) {
         <link rel="icon" href="/favicon.ico" />
         <title>Asterios Raidboss Notifier</title>
       </Head>
-      <Flex
-        height="100vh"
-        gap={2}
-        flexWrap="wrap"
-        flexDirection="column"
-        flex="1 1 0"
-      >
+      <Flex gap={2} height="100vh" width="100vw" flexDirection="column">
         <Flex as="nav" borderBottom="1px solid black">
           Navigation
         </Flex>

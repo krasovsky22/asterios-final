@@ -1,8 +1,8 @@
 import classNames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import { useToast } from '@chakra-ui/react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Text, Heading, Box, Flex } from '@chakra-ui/react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useStore } from '@stores/appStore';
 import styles from './Raidboss.module.css';
@@ -26,9 +26,11 @@ const BossInfoMap = {
 const DEFAULT_TITLE = 'Asterios Raidboss Notifier';
 const TITLE_MESSAGES = ['ATTENTION!', 'BOSS IS SPAWNED!'];
 
-const Raidboss = ({ boss }) => {
+const Raidboss = ({ boss, isMobileView = false }) => {
   const [seconds, setSeconds] = useState(0);
   const [titleIndex, setTitleIndex] = useState(0);
+  const [secondsTillMaxSpawn, setSecondsTillMaxSpawn] = useState(0);
+
   const { getBossKill } = useStore();
   const toast = useToast();
 
@@ -42,6 +44,7 @@ const Raidboss = ({ boss }) => {
     return BossInfoMap[key].image;
   }, [boss.name]);
 
+  // Calculate seconds till check is max visible
   useEffect(() => {
     let interval = setInterval(() => {
       if (kill?.isChestVisible) {
@@ -68,6 +71,25 @@ const Raidboss = ({ boss }) => {
     return () => clearInterval(interval);
   }, [kill?.checkIsVisibleUntil, kill?.isChestVisible]);
 
+  // calculate max respawn seconds
+  useEffect(() => {
+    let interval = setInterval(() => {
+      if (kill?.isSpawning) {
+        const now = new Date();
+        const seconds = Math.floor(
+          (new Date(kill?.respawnEndTime).getTime() - now.getTime()) / 1000
+        );
+
+        setSecondsTillMaxSpawn(seconds);
+      } else {
+        setSecondsTillMaxSpawn(0);
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [kill?.isSpawning, kill?.respawnEndTime]);
+
   const copyChestCommand = useCallback(() => {
     const tempInput = document.createElement('input');
     tempInput.value = boss.command;
@@ -90,6 +112,11 @@ const Raidboss = ({ boss }) => {
     ? 'green.300'
     : 'inherit';
 
+  const hoursTillMaxSpawn = Math.floor(secondsTillMaxSpawn / 3600);
+  let totalSeconds = (secondsTillMaxSpawn %= 3600);
+  const minutesTillMaxSpawn = Math.floor(totalSeconds / 60);
+  totalSeconds = totalSeconds % 60;
+
   return (
     <Flex
       gap={2}
@@ -102,22 +129,35 @@ const Raidboss = ({ boss }) => {
       className={classNames({ [styles.blinking]: kill?.isChestVisible })}
       onClick={copyChestCommand}
     >
-      <Box
-        width="30%"
-        height="100%"
-        backgroundSize="cover"
-        backgroundPosition="center"
-        backgroundRepeat="no-repeat"
-        backgroundClip="padding-box"
-        backgroundImage={`url('${bossImageUrl}')`}
-      ></Box>
+      {!isMobileView && (
+        <Flex
+          width="30%"
+          height="100%"
+          minWidth="30%"
+          alignItems="center"
+          flexDirection="column"
+          backgroundSize="cover"
+          justifyContent="flex-end"
+          backgroundPosition="center"
+          backgroundRepeat="no-repeat"
+          backgroundClip="padding-box"
+          backgroundImage={`url('${bossImageUrl}')`}
+        >
+          {boss?.floor && (
+            <Text fontWeight="bold" color="white">
+              Floor: {boss?.floor}
+            </Text>
+          )}
+        </Flex>
+      )}
+
       <Flex flexDirection="column" flexGrow={1} alignItems="center">
         <Heading noOfLines={1} size="md" textAlign="center">
           {boss.name}
         </Heading>
         {kill && (
           <>
-            <Flex>
+            <Flex gap={1}>
               <Text>Killed at:</Text>
               <Text>{kill.killedAt}</Text>
             </Flex>
@@ -128,14 +168,36 @@ const Raidboss = ({ boss }) => {
                 <Text>{seconds} seconds.</Text>
               </Flex>
             )}
-            <Flex justifyContent="space-evenly" width="100%">
-              <Flex>
-                <Text>Start Time:</Text>
-                <Text>{kill.respawnStartTime}</Text>
+            {kill.isSpawning && (
+              <Flex justifyContent="center" gap={1}>
+                <Text fontWeight="bold">Max Spawn Left:</Text>
+                <Text textColor="blue.500">
+                  {hoursTillMaxSpawn < 10
+                    ? `0${hoursTillMaxSpawn}`
+                    : hoursTillMaxSpawn}
+                  :
+                  {minutesTillMaxSpawn < 10
+                    ? `0${minutesTillMaxSpawn}`
+                    : minutesTillMaxSpawn}
+                  :{totalSeconds < 10 ? `0${totalSeconds}` : totalSeconds}
+                </Text>
               </Flex>
-              <Flex>
-                <Text>End Time:</Text>
-                <Text>{kill.respawnEndTime}</Text>
+            )}
+
+            <Flex
+              mb={3}
+              width="100%"
+              alignItems="center"
+              justifyContent="space-evenly"
+              flexDirection={isMobileView ? 'column' : 'row'}
+            >
+              <Flex gap={1}>
+                <Text fontWeight="bold">Start Time:</Text>
+                <Text textColor="red.500">{kill.respawnStartTime}</Text>
+              </Flex>
+              <Flex gap={1}>
+                <Text fontWeight="bold">End Time:</Text>
+                <Text textColor="red.500">{kill.respawnEndTime}</Text>
               </Flex>
             </Flex>
           </>

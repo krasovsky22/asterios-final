@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { observer } from 'mobx-react-lite';
-import { SimpleGrid } from '@chakra-ui/react';
 import { getSnapshot } from 'mobx-state-tree';
+import { SimpleGrid, useMediaQuery } from '@chakra-ui/react';
 
 import Layout from '@components/layout';
 import { Raidboss } from '@components/Raidboss';
@@ -33,6 +33,7 @@ const Server = () => {
   const { id: serverId } = query;
 
   const { subscribeToServerKills, bosses } = useStore();
+  const [isNotTablet = true] = useMediaQuery('(min-width: 768px)');
 
   useEffect(() => {
     const unsubscribe = subscribeToServerKills(serverId);
@@ -42,9 +43,14 @@ const Server = () => {
 
   return (
     <Layout>
-      <SimpleGrid columns={2} spacing={10} height="100%">
+      <SimpleGrid
+        key={isNotTablet ? 2 : 1}
+        columns={{ base: 1, sm: 2 }}
+        spacing={isNotTablet ? 10 : 5}
+        height="100%"
+      >
         {bosses.map((boss) => (
-          <Raidboss key={boss.id} boss={boss} />
+          <Raidboss key={boss.id} boss={boss} isMobileView={!isNotTablet} />
         ))}
       </SimpleGrid>
     </Layout>
