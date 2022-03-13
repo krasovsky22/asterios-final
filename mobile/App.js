@@ -6,8 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
-import type {Node} from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -26,8 +25,36 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
-const Section = ({children, title}): Node => {
+import firestore from '@react-native-firebase/firestore';
+
+// const serversCollection =
+//.where('enabled', '==', true);
+
+const Section = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark';
+
+  useEffect(() => {
+    async function loadServers() {
+      const servers = await firestore()
+        .collection('servers')
+        .onSnapshot(querySnapshot => {
+          const users = [];
+
+          querySnapshot.forEach(documentSnapshot => {
+            users.push({
+              ...documentSnapshot.data(),
+              key: documentSnapshot.id,
+            });
+          });
+
+          console.log('aaaa', users);
+        });
+
+      console.log('aaa', servers);
+    }
+
+    loadServers();
+  }, []);
   return (
     <View style={styles.sectionContainer}>
       <Text
@@ -52,7 +79,7 @@ const Section = ({children, title}): Node => {
   );
 };
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -74,16 +101,6 @@ const App: () => Node = () => {
             Edit <Text style={styles.highlight}>App.js</Text> to change this
             screen and then come back to see your edits.
           </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
         </View>
       </ScrollView>
     </SafeAreaView>
