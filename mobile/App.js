@@ -17,6 +17,8 @@ import {
   View,
 } from 'react-native';
 
+import useStore from './src/stores/appStore';
+
 import {
   Colors,
   DebugInstructions,
@@ -33,28 +35,31 @@ import firestore from '@react-native-firebase/firestore';
 const Section = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark';
 
-  useEffect(() => {
-    async function loadServers() {
-      const servers = await firestore()
-        .collection('servers')
-        .onSnapshot(querySnapshot => {
-          const users = [];
+  const store = useStore();
+  console.log('store', store);
 
-          querySnapshot.forEach(documentSnapshot => {
-            users.push({
-              ...documentSnapshot.data(),
-              key: documentSnapshot.id,
-            });
-          });
+//   useEffect(() => {
+//     async function loadServers() {
+//       const servers = await firestore()
+//         .collection('servers')
+//         .onSnapshot(querySnapshot => {
+//           const users = [];
 
-          console.log('aaaa', users);
-        });
+//           querySnapshot.forEach(documentSnapshot => {
+//             users.push({
+//               ...documentSnapshot.data(),
+//               key: documentSnapshot.id,
+//             });
+//           });
 
-      console.log('aaa', servers);
-    }
+//           console.log('aaaa', users);
+//         });
 
-    loadServers();
-  }, []);
+//       console.log('aaa', servers);
+//     }
+
+//     loadServers();
+//   }, []);
   return (
     <View style={styles.sectionContainer}>
       <Text
@@ -85,25 +90,30 @@ const App = () => {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  const store = useStore();
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Provider store={store}>
+      <>
+        <SafeAreaView style={backgroundStyle}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={backgroundStyle}>
+            <Header />
+            <View
+              style={{
+                backgroundColor: isDarkMode ? Colors.black : Colors.white,
+              }}>
+              <Section title="Step One">
+                Edit <Text style={styles.highlight}>App.js</Text> to change this
+                screen and then come back to see your edits.
+              </Section>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </>
+    </Provider>
   );
 };
 
