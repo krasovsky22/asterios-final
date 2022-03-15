@@ -1,7 +1,7 @@
-import { types } from "mobx-state-tree";
+import {types} from 'mobx-state-tree';
 
-import RaidBossModel from "./raidboss";
-import ServerModel from "./server";
+import RaidBossModel from './raidboss';
+import ServerModel from './server';
 
 const ServerBossKillModel = types
   .model({
@@ -19,7 +19,7 @@ const ServerBossKillModel = types
     isSpawned: types.optional(types.boolean, false),
     isChestVisible: types.optional(types.boolean, false),
   })
-  .views((self) => ({
+  .views(self => ({
     get killedAt() {
       const killedAt = new Date(self.isoDate);
 
@@ -29,7 +29,7 @@ const ServerBossKillModel = types
     get respawnStartTime() {
       const respawnStartTime = new Date(self.isoDate);
       respawnStartTime.setTime(
-        respawnStartTime.getTime() + 18 * 60 * 60 * 1000
+        respawnStartTime.getTime() + 18 * 60 * 60 * 1000,
       );
 
       return respawnStartTime.toLocaleString();
@@ -49,23 +49,23 @@ const ServerBossKillModel = types
       return checkEndTime;
     },
   }))
-  .actions((self) => ({
-    setIsSpawning: (isSpawning) => {
+  .actions(self => ({
+    setIsSpawning: isSpawning => {
       self.isSpawning = isSpawning;
     },
-    setIsSpawned: (isSpawned) => {
+    setIsSpawned: isSpawned => {
       self.isSpawned = isSpawned;
     },
-    setIsChestVisible: (isChestVisible) => {
+    setIsChestVisible: isChestVisible => {
       self.isChestVisible = isChestVisible;
     },
   }))
-  .actions((self) => {
+  .actions(self => {
     let interval;
 
     const afterCreate = () => {
       interval = setInterval(() => {
-        const { isoDate } = self;
+        const {isoDate} = self;
 
         if (!isoDate) {
           return;

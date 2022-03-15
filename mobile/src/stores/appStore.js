@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
-import { applySnapshot, types, flow } from 'mobx-state-tree';
+import {useMemo} from 'react';
+import {applySnapshot, types, flow} from 'mobx-state-tree';
 
-import getAllBosses from '@lib/queries/getAllBosses';
-import getAllServers from '@lib/queries/getAllServers';
-import { ServerModel, RaidBossModel, ServerBossKillModel } from './models';
-import subscribeForServerBossKills from '@lib/queries/subscribeForServerBossKills';
+// import getAllBosses from '@lib/queries/getAllBosses';
+import fetchAllServers from './queries/fetchAllServers';
+import {ServerModel, RaidBossModel, ServerBossKillModel} from './models';
+//import subscribeForServerBossKills from '@lib/queries/subscribeForServerBossKills';
 
 let store;
 
@@ -14,16 +14,14 @@ const Store = types
     bosses: types.array(RaidBossModel),
     serverKills: types.array(ServerBossKillModel),
   })
-  .views((self) => ({
-    getBossKill: (bossId) => {
-      return self.serverKills.find(
-        (serverKill) => serverKill.boss.id === bossId
-      );
+  .views(self => ({
+    getBossKill: bossId => {
+      return self.serverKills.find(serverKill => serverKill.boss.id === bossId);
     },
   }))
-  .actions((self) => ({
-    setServerKills: (serverKills) => {
-      const dataToSet = serverKills.map(({ bossId, serverId, ...rest }) => ({
+  .actions(self => ({
+    setServerKills: serverKills => {
+      const dataToSet = serverKills.map(({bossId, serverId, ...rest}) => ({
         ...rest,
         boss: bossId,
         server: serverId,
@@ -31,32 +29,32 @@ const Store = types
       self.serverKills = dataToSet;
     },
   }))
-  .actions((self) => {
+  .actions(self => {
     const loadServers = flow(function* () {
-      const servers = yield getAllServers();
+      const servers = yield fetchAllServers();
       self.servers = servers;
     });
 
     const loadBosses = flow(function* () {
-      const bosses = yield getAllBosses();
-      self.bosses = bosses;
+      //   const bosses = yield getAllBosses();
+      //   self.bosses = bosses;
     });
 
-    const initializeDefaults = flow(function* () {
+    const afterCreate = flow(function* () {
       yield loadServers();
       yield loadBosses();
     });
 
-    const subscribeToServerKills = (serverId) => {
-      return subscribeForServerBossKills(serverId, (bossesKills) => {
-        self.setServerKills(bossesKills);
-      });
+    const subscribeToServerKills = serverId => {
+      //   return subscribeForServerBossKills(serverId, bossesKills => {
+      //     self.setServerKills(bossesKills);
+      //   });
     };
 
     return {
       loadBosses,
       loadServers,
-      initializeDefaults,
+      afterCreate,
       subscribeToServerKills,
     };
   });
@@ -70,15 +68,22 @@ export function initializeStore(snapshot = null) {
     applySnapshot(_store, snapshot);
   }
   // For SSG and SSR always create a new store
-  if (typeof window === 'undefined') return _store;
+  if (typeof window === 'undefined') {
+    return _store;
+  }
   // Create the store once in the client
-  if (!store) store = _store;
+  if (!store) {
+    store = _store;
+  }
 
   return store;
 }
 
 export function useStore(initialState) {
-  const store = useMemo(() => initializeStore(initialState), [initialState]);
+  const hookStore = useMemo(
+    () => initializeStore(initialState),
+    [initialState],
+  );
 
-  return store;
+  return hookStore;
 }
